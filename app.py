@@ -1,7 +1,7 @@
 import streamlit as st
 import pandas as pd
 
-from ui import 데이터분석
+from ui import 가격예측, 데이터분석
 
 # CSS를 사용하여 개별 요소들을 중앙 정렬
 st.markdown(
@@ -31,7 +31,7 @@ def main() :
     elif choice == menu[1] :
         데이터분석.run_eda()
     elif choice == menu[2] :
-        pass
+        가격예측.run_ml()
 
 if __name__ == "__main__" :
     main()
