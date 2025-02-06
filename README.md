@@ -118,6 +118,7 @@ predicted_price_krw = predicted_price_gram * exchange_rate
 - **Streamlit 공식 문서:** [https://docs.streamlit.io/](https://docs.streamlit.io/)
 - **yfinance 공식 문서:** [https://pypi.org/project/yfinance/](https://pypi.org/project/yfinance/)
 - **ExchangeRate-API:** [https://www.exchangerate-api.com/](https://www.exchangerate-api.com/)
+- **kaggle 공식문서:** [https://www.kaggle.com/datasets/novandraanugrah/xauusd-gold-price-historical-data-2004-2024/data](https://www.kaggle.com/datasets/novandraanugrah/xauusd-gold-price-historical-data-2004-2024/data)
 
 ## 📬 문의 사항
 
