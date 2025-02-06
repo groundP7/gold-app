@@ -121,7 +121,6 @@ predicted_price_krw = predicted_price_gram * exchange_rate
 
 ## 📬 문의 사항
 
-- **✉️ 이메일:** [p.ground714@gmail.com](p.ground714@gmail.com)
-
+- **✉️ 이메일:** [p.ground714@gmail.com](mailto:p.ground714@gmail.com)
 ---
 
