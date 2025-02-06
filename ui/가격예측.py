@@ -5,24 +5,45 @@ import joblib  # ARIMA 모델 로드용
 from datetime import datetime, timedelta
 import requests
 import io  # 파일 저장을 위한 라이브러리
+import os  # 경로 확인용
 
-# 1️⃣ ARIMA 모델 로드 함수
+
+# 1️⃣ ARIMA 모델 로드 함수 (예외 처리 추가)
 def load_arima_model():
-    model_path = 'model/gold_price_arima.pkl'  # 새로운 모델 경로 확인
-    try:
-        model = joblib.load(model_path)
-        return model
-    except (FileNotFoundError, joblib.externals.loky.process_executor.TerminatedWorkerError) as e:
-        st.error(f"모델 로딩 중 오류 발생: {str(e)}")
-        st.error("모델 파일을 확인해주세요.")
-        return None
+    model_path = "model/gold_price_arima.pkl"  # 모델 파일 경로
 
-# 2️⃣ 환율 정보 가져오는 함수
+    if not os.path.exists(model_path):  # 파일 존재 여부 확인
+        st.error(f"❌ 모델 파일을 찾을 수 없습니다: `{model_path}`")
+        st.stop()  # 앱 실행 중단
+
+    try:
+        model = joblib.load(model_path, mmap_mode=None)
+        return model
+    except FileNotFoundError:
+        st.error("❌ 모델 파일을 찾을 수 없습니다.")
+    except EOFError:
+        st.error("❌ 모델 파일이 손상되었습니다. 다시 저장해 주세요.")
+    except ModuleNotFoundError as e:
+        st.error(f"❌ 모델을 불러오는 중 오류 발생: {e}. 필요한 패키지를 설치해 주세요.")
+    except Exception as e:
+        st.error(f"❌ 예기치 않은 오류 발생: {e}")
+
+    st.stop()  # 오류 발생 시 실행 중단
+
+
+# 2️⃣ 환율 정보 가져오는 함수 (예외 처리 추가)
 def get_exchange_rate():
     url = "https://v6.exchangerate-api.com/v6/553ac17cfdac2697c92cd6a8/latest/USD"
-    response = requests.get(url)
-    data = response.json()
-    return data['conversion_rates']['KRW']
+
+    try:
+        response = requests.get(url, timeout=5)  # 5초 timeout 설정
+        response.raise_for_status()  # HTTP 에러 발생 시 예외 처리
+        data = response.json()
+        return data["conversion_rates"]["KRW"]
+    except requests.exceptions.RequestException:
+        st.warning("⚠️ 환율 정보를 가져오는 데 실패했습니다. 기본값 1300원 적용.")
+        return 1300  # 기본 환율 값 설정
+
 
 # 3️⃣ 예측 실행 함수
 def run_ml():
@@ -31,9 +52,6 @@ def run_ml():
 
     # 모델 로드
     model = load_arima_model()
-    if model is None:
-        st.error("모델을 로드할 수 없습니다. 프로그램을 종료합니다.")
-        return
 
     # 4️⃣ 날짜 선택 방식
     date_option = st.radio("날짜 선택 방식", ["하나의 날짜 선택", "시작과 끝 날짜 선택"])
@@ -106,8 +124,8 @@ def run_ml():
         st.plotly_chart(fig, use_container_width=True)
 
         # 11️⃣ 데이터 다운로드 기능 추가
-        csv_data = df_result.to_csv(index=False, encoding="utf-8-sig")  # 한글 깨짐 방지
-        csv_file = io.BytesIO(csv_data.encode("utf-8-sig"))  # 스트림 데이터로 변환
+        csv_data = df_result.to_csv(index=False, encoding="utf-8-sig")
+        csv_file = io.BytesIO(csv_data.encode("utf-8-sig"))
 
         st.download_button(
             label="📥 예측 결과 다운로드 (CSV)",
@@ -115,6 +133,7 @@ def run_ml():
             file_name=f"gold_price_prediction_{datetime.today().date()}.csv",
             mime="text/csv"
         )
+
 
 if __name__ == "__main__":
     run_ml()
