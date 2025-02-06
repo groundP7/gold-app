@@ -61,7 +61,7 @@ def run_home():
     @st.cache_data(ttl=3600)  # 1시간마다 데이터 갱신
     def load_recent_data():
         end_date = datetime.now()
-        start_date = end_date - timedelta(days=7)  # 최근 7일간의 데이터
+        start_date = end_date - timedelta(days=14)  # 최근 7일간의 데이터
         
         gold_data = yf.download('GLD', start=start_date, end=end_date)
         
