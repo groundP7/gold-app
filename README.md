@@ -119,5 +119,9 @@ predicted_price_krw = predicted_price_gram * exchange_rate
 - **yfinance 공식 문서:** [https://pypi.org/project/yfinance/](https://pypi.org/project/yfinance/)
 - **ExchangeRate-API:** [https://www.exchangerate-api.com/](https://www.exchangerate-api.com/)
 
+## 📬 문의 사항
+
+- **✉️ 이메일:** [p.ground714@gmail.com](p.ground714@gmail.com)
+
 ---
 
