@@ -85,7 +85,8 @@ def run_home():
         'Price': '${:.2f} (1/10 oz)',
         'Price_per_oz': '${:.2f} per oz (31.1g)',
         'Price_per_g': '${:.2f} per g'
-    }))
+    }), hide_index= True
+    )
 
     # 주요 기능 소개
     st.markdown("<div class='card'>", unsafe_allow_html=True)
