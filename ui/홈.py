@@ -81,7 +81,7 @@ def run_home():
     st.markdown("<div class='card-body'>최근 5일간의 금 가격 데이터를 확인할 수 있습니다.</div>", unsafe_allow_html=True)
     st.markdown("</div>", unsafe_allow_html=True)
 
-    st.dataframe(recent_data.style.format({
+    st.dataframe(recent_data.style.hide_index().format({
         'Price': '${:.2f} (1/10 oz)',
         'Price_per_oz': '${:.2f} per oz (31.1g)',
         'Price_per_g': '${:.2f} per g'
