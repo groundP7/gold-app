@@ -123,6 +123,12 @@ def run_ml():
 
         st.plotly_chart(fig, use_container_width=True)
 
+        st.warning(
+        "⚠️ **주의사항**\n"
+        "- 금 가격은 다양한 경제적, 정치적 요인에 영향을 받기 때문에 정확한 장기 예측은 어려울 수 있습니다.\n"
+        "- AI 모델은 과거 데이터를 기반으로 예측하므로, 예상치 못한 사건이나 급격한 시장 변화를 반영하지 못할 수 있습니다."
+        )
+
         # 11️⃣ 데이터 다운로드 기능 추가
         csv_data = df_result.to_csv(index=False, encoding="utf-8-sig")
         csv_file = io.BytesIO(csv_data.encode("utf-8-sig"))
