@@ -33,10 +33,11 @@ RandomForest 모델을 활용하여 금 가격을 예측합니다.&#x20;
 ## 🛠 프로젝트 프로그램 설치 방법
 
 ```bash
-# 가상 환경 생성 (선택 사항)
-python -m venv venv
-source venv/bin/activate  # Mac/Linux
-venv\Scripts\activate     # Windows
+# Anaconda 환경 생성
+conda create -n gold_price_env python=3.9
+
+# 가상 환경 활성화
+conda activate gold_price_env
 
 # 필수 패키지 설치
 pip install -r requirements.txt
