@@ -6,3 +6,5 @@ pickle
 datetime
 requests
 yfinance
+io
+joblib
