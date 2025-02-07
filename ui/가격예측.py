@@ -83,6 +83,8 @@ def run_ml():
         # 환율 정보 가져오기
         exchange_rate = get_exchange_rate()
 
+
+        st.text("예측 금액은 EXchange-rate AIP를 이용하여 실시간환율 정보를 가져와서 보여줍니다.")
         # 예측 결과 데이터프레임 생성
         df_result = pd.DataFrame({
             "날짜": forecast_dates,

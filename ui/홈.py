@@ -79,6 +79,7 @@ def run_home():
     st.markdown("<div class='card'>", unsafe_allow_html=True)
     st.markdown("<div class='card-header'>📊 최근 금 가격</div>", unsafe_allow_html=True)
     st.markdown("<div class='card-body'>최근 5일간의 금 가격 데이터를 확인할 수 있습니다.</div>", unsafe_allow_html=True)
+    st.markdown("<div class='card-body'>금 가격의 데이터는 yfinence라이브러리를 사용하여 실시간으로 데이터를 가져옵니다.</div>", unsafe_allow_html=True)
     st.markdown("</div>", unsafe_allow_html=True)
 
     st.dataframe(recent_data.reset_index(drop=True).style.format({
