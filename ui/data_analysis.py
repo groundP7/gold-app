@@ -10,37 +10,64 @@ DATA_PATH = "data/XAU_gold_data.csv"
 # 실시간 데이터 가져오기 및 저장
 def fetch_gold_data():
     try:
-        df = yf.download("GC=F", start="2004-01-01", progress=False)
-        
+        # 기존 데이터 로드
+        if os.path.exists(DATA_PATH):
+            try:
+                existing_df = pd.read_csv(DATA_PATH, sep=';', index_col=0, parse_dates=True)
+                existing_df.index = pd.to_datetime(existing_df.index)  # 인덱스를 날짜 형식으로 변환
+            except Exception as e:
+                st.error(f"⚠ 기존 데이터를 불러오는 중 오류 발생: {e}")
+                existing_df = None
+        else:
+            existing_df = None
+
+        # 최신 데이터 다운로드
+        new_df = yf.download("GC=F", start="2004-01-01", progress=False)
+
         # 데이터 유효성 검사
-        if df is None or df.empty:
+        if new_df is None or new_df.empty:
             st.error("❌ 데이터를 가져올 수 없습니다.")
-            return None
-        
+            return existing_df if existing_df is not None else None
+
         # 필요한 컬럼만 선택
-        if 'Close' not in df.columns:
-            st.error("❌ 'Close' 컬럼이 없습니다. 데이터 형식을 확인하세요.")
-            return None
-        
-        df = df[['Open', 'High', 'Low', 'Close']]
-        df.reset_index(inplace=True)
-        df['Date'] = pd.to_datetime(df['Date'])  # 날짜 변환
-        df.set_index('Date', inplace=True)
+        new_df = new_df[['Open', 'High', 'Low', 'Close']]
+        new_df.reset_index(inplace=True)
+        new_df.rename(columns={'Date': 'Date'}, inplace=True)
+        new_df['Date'] = pd.to_datetime(new_df['Date'])
+        new_df.set_index('Date', inplace=True)
+
+        # 기존 데이터가 있는 경우 새로운 데이터만 추가
+        if existing_df is not None:
+            last_date = existing_df.index.max()
+
+            # 새로운 데이터 중에서 기존 데이터 이후의 데이터만 선택
+            new_data = new_df[new_df.index > last_date]
+
+            if new_data.empty:
+                st.info("✅ 데이터가 최신 상태입니다. 새로운 데이터가 없습니다.")
+                return existing_df  # 기존 데이터 반환
+
+            # 기존 데이터와 새로운 데이터 병합 (중복 방지)
+            updated_df = pd.concat([existing_df, new_data]).drop_duplicates()
+            st.success(f"📢 {len(new_data)}개의 새로운 데이터가 추가되었습니다.")
+        else:
+            updated_df = new_df  # 기존 데이터가 없으면 새로운 데이터 사용
+            st.success("✅ 새 데이터가 다운로드되었습니다.")
 
         # 최신 데이터 저장
-        df.to_csv(DATA_PATH, sep=';', index=True)
-        return df
+        updated_df.to_csv(DATA_PATH, sep=';', index=True)
+        return updated_df
     except Exception as e:
-        st.error(f"데이터를 가져오는 중 오류 발생: {e}")
+        st.error(f"❌ 데이터 업데이트 중 오류 발생: {e}")
         return None
 
 # 최신 데이터 로드
 def load_latest_data():
     if os.path.exists(DATA_PATH):
         try:
-            df = pd.read_csv(DATA_PATH, sep=';', index_col=0)
+            df = pd.read_csv(DATA_PATH, sep=';', index_col=0, parse_dates=True)
 
-            # "Date" 컬럼이 없으면 fetch_gold_data() 실행
+            # "Close" 컬럼이 없으면 fetch_gold_data() 실행
             if df.empty or "Close" not in df.columns:
                 st.warning("⚠ 데이터가 유효하지 않습니다. 최신 데이터를 가져옵니다.")
                 return fetch_gold_data()
