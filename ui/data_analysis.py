@@ -8,7 +8,6 @@ import os
 DATA_PATH = "data/XAU_gold_data.csv"
 
 # 실시간 데이터 가져오기 및 저장
-@st.cache_data
 def fetch_gold_data():
     try:
         df = yf.download("GC=F", start="2004-01-01", progress=False)
@@ -17,25 +16,35 @@ def fetch_gold_data():
         df.rename(columns={'Date': 'Date'}, inplace=True)
         df['Date'] = pd.to_datetime(df['Date'])
         df.set_index('Date', inplace=True)
+        
+        # 최신 데이터 CSV 저장
         df.to_csv(DATA_PATH, sep=';', index=True)
         return df
     except Exception as e:
         st.error(f"데이터를 가져오는 중 오류 발생: {e}")
         return None
 
-# 로컬 데이터 로드
-def load_local_data():
+# 최신 데이터 로드 (없으면 새로 다운로드)
+def load_latest_data():
     if os.path.exists(DATA_PATH):
-        df = pd.read_csv(DATA_PATH, sep=';', parse_dates=['Date'], index_col='Date')
-        return df
-    return fetch_gold_data()
+        try:
+            df = pd.read_csv(DATA_PATH, sep=';', parse_dates=['Date'], index_col='Date')
+            latest_data = fetch_gold_data()  # 최신 데이터 가져오기
+            if latest_data is not None:
+                df = latest_data  # 최신 데이터로 덮어쓰기
+        except Exception as e:
+            st.error(f"로컬 데이터를 불러오는 중 오류 발생: {e}")
+            df = fetch_gold_data()  # 오류 발생 시 새로 가져오기
+    else:
+        df = fetch_gold_data()
+    return df
 
-# 🔥 **run_eda 함수 추가**
+# 🔥 EDA 실행 함수 (앱 실행 시 최신 데이터 반영)
 def run_eda():
     st.title("📊 금 가격 데이터 분석")
     st.write("실시간 데이터를 기반으로 금 가격을 분석합니다.")
 
-    df = load_local_data()
+    df = load_latest_data()  # 최신 데이터 로드
 
     if df is None or df.empty:
         st.error("❌ 데이터가 없습니다. 다시 시도하세요.")
