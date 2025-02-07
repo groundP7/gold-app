@@ -17,16 +17,18 @@ def fetch_gold_data():
             st.error("❌ 데이터를 가져올 수 없습니다.")
             return None
         
-        # 필요한 컬럼만 선택
+        # 'Close' 컬럼 확인
         if 'Close' not in df.columns:
             st.error("❌ 'Close' 컬럼이 없습니다. 데이터 형식을 확인하세요.")
             return None
         
+        # 데이터 정리
         df = df[['Open', 'High', 'Low', 'Close']]
         df.reset_index(inplace=True)
+        df.rename(columns={'Date': 'Date'}, inplace=True)
         df['Date'] = pd.to_datetime(df['Date'])
         df.set_index('Date', inplace=True)
-        
+
         # 최신 데이터 저장
         df.to_csv(DATA_PATH, sep=';', index=True)
         return df
@@ -38,17 +40,18 @@ def fetch_gold_data():
 def load_latest_data():
     if os.path.exists(DATA_PATH):
         try:
-            df = pd.read_csv(DATA_PATH, sep=';', parse_dates=['Date'], index_col='Date')
-            
-            # 최신 데이터 가져오기
-            latest_data = fetch_gold_data()
-            if latest_data is not None:
-                df = latest_data  # 최신 데이터로 갱신
-            
+            df = pd.read_csv(DATA_PATH, sep=';', index_col=0)
+
+            # "Date" 컬럼이 없을 경우 fetch_gold_data() 실행
+            if 'Date' not in df.columns:
+                st.warning("⚠ 로컬 데이터에서 'Date' 컬럼을 찾을 수 없습니다. 최신 데이터를 가져옵니다.")
+                return fetch_gold_data()
+
+            df.index = pd.to_datetime(df.index)  # 인덱스를 날짜 형식으로 변환
             return df
         except Exception as e:
             st.error(f"로컬 데이터를 불러오는 중 오류 발생: {e}")
-            return fetch_gold_data()  # 오류 발생 시 새로 가져오기
+            return fetch_gold_data()  # 오류 발생 시 새로 다운로드
     else:
         return fetch_gold_data()  # 파일이 없으면 새로 다운로드
 
