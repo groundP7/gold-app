@@ -1,7 +1,7 @@
 import streamlit as st
 import pandas as pd
 
-from ui import 가격예측, 데이터분석, 홈
+from ui import data_analysis, 가격예측, 홈
 
 # CSS를 사용하여 개별 요소 스타일링
 st.markdown(
@@ -62,9 +62,10 @@ def main():
     if choice == "🏠 홈":
         홈.run_home()
     elif choice == "📊 데이터분석":
-        데이터분석.run_eda()
+        data_analysis.run_eda()
     elif choice == "📈 가격예측":
         가격예측.run_ml()
+        
 
 if __name__ == "__main__":
     main()
