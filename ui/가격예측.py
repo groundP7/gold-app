@@ -139,6 +139,7 @@ def run_ml():
             file_name=f"gold_price_prediction_{datetime.today().date()}.csv",
             mime="text/csv"
         )
+        st.text("엑셀 등에서 열었을 때 데이터가 깨지지 않도록 utf-8-sig 인코딩 적용")
 
 
 if __name__ == "__main__":
