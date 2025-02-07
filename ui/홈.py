@@ -95,6 +95,13 @@ def run_home():
     st.markdown("<ul><li>과거 금 가격 데이터 분석</li><li>다양한 시각화 도구 제공</li><li>머신러닝 기반 금 가격 예측</li><li>사용자 정의 예측 기간 설정</li></ul>", unsafe_allow_html=True)
     st.markdown("</div>", unsafe_allow_html=True)
 
+    # 사용 방법
+    st.markdown("<div class='card'>", unsafe_allow_html=True)
+    st.markdown("<div class='card-header'>🚀 사용 방법</div>", unsafe_allow_html=True)
+    st.markdown("<div class='card-body'>앱 사용 방법을 확인하세요:</div>", unsafe_allow_html=True)
+    st.markdown("<ol><li>좌측 사이드바에서 원하는 기능을 선택하세요.</li><li>'데이터 분석'에서 과거 금 데이터를 탐색할 수 있습니다.</li><li>'가격 예측'에서 미래 금 가격을 예측할 수 있습니다.</li></ol>", unsafe_allow_html=True)
+    st.markdown("</div>", unsafe_allow_html=True)
+
     # 데이터 분석 설명
     st.markdown("<div class='card'>", unsafe_allow_html=True)
     st.markdown("<div class='card-header'>📊 데이터 분석</div>", unsafe_allow_html=True)
@@ -118,7 +125,7 @@ def run_home():
 
     st.markdown("""
     <ol>
-        <li><b>데이터 수집:</b> Yahoo Finance API를 통해 과거 금 가격 데이터를 수집합니다. 이 데이터는 금의 일별 종가를 포함합니다.</li>
+        <li><b>데이터 수집:</b>요일이 지나면 실시간 데이터를 보여주기위해 Yahoo Finance API를 통해 과거 금 가격 데이터를 수집할수 있도록 했습니다. 이 데이터는 금의 일별 종가를 포함합니다.</li>
         <li><b>시계열 특성 생성:</b> 시간에 따른 추세와 계절성을 반영하기 위해 이동 평균, 차분 등의 시계열 특성을 생성합니다.</li>
         <li><b>ARIMA 모델 학습:</b> 과거 데이터를 기반으로 ARIMA(AutoRegressive Integrated Moving Average) 모델을 학습시킵니다. 이 모델은 과거의 금 가격 패턴을 분석하여 미래의 가격을 예측할 수 있습니다.</li>
         <li><b>예측 수행:</b> 사용자가 선택한 날짜를 입력하면, 학습된 ARIMA 모델을 사용하여 해당 날짜의 금 가격을 예측합니다. 예측된 가격은 1온스 및 1그램 기준으로 제공됩니다.</li>
@@ -126,14 +133,22 @@ def run_home():
     </ol>
     """, unsafe_allow_html=True)
 
-
-    st.markdown("</div>", unsafe_allow_html=True)
-
-    # 사용 방법
+    # 참고 및 출처 섹션
     st.markdown("<div class='card'>", unsafe_allow_html=True)
-    st.markdown("<div class='card-header'>🚀 사용 방법</div>", unsafe_allow_html=True)
-    st.markdown("<div class='card-body'>앱 사용 방법을 확인하세요:</div>", unsafe_allow_html=True)
-    st.markdown("<ol><li>좌측 사이드바에서 원하는 기능을 선택하세요.</li><li>'데이터 분석'에서 과거 금 데이터를 탐색할 수 있습니다.</li><li>'가격 예측'에서 미래 금 가격을 예측할 수 있습니다.</li></ol>", unsafe_allow_html=True)
+    st.markdown("<div class='card-header'>📚 참고 및 출처</div>", unsafe_allow_html=True)
+    st.markdown("<div class='card-body'>이 앱은 다양한 데이터 소스와 라이브러리를 활용하여 금 가격을 분석하고 예측합니다. 아래는 참고한 자료 및 출처입니다.</div>", unsafe_allow_html=True)
+
+    st.markdown("""
+    <ul>
+        <li><a href='https://scikit-learn.org/stable/' target='_blank'>Scikit-learn 공식 문서</a></li>
+        <li><a href='https://facebook.github.io/prophet/' target='_blank'>Facebook Prophet 공식 문서</a></li>
+        <li><a href='https://docs.streamlit.io/' target='_blank'>Streamlit 공식 문서</a></li>
+        <li><a href='https://pypi.org/project/yfinance/' target='_blank'>yfinance 공식 문서</a></li>
+        <li><a href='https://www.exchangerate-api.com/' target='_blank'>ExchangeRate-API</a></li>
+        <li><a href='https://www.kaggle.com/datasets/novandraanugrah/xauusd-gold-price-historical-data-2004-2024/data' target='_blank'>Kaggle: XAUUSD 금 가격 데이터 (2004-2024)</a></li>
+    </ul>
+    """, unsafe_allow_html=True)
+
     st.markdown("</div>", unsafe_allow_html=True)
 
     # 면책 조항
