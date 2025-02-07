@@ -49,7 +49,9 @@ st.markdown(
 )
 
 def main():
-    st.title("💰 금 가격 예측 App")
+    st.markdown("""
+    <h1 style='text-align: center; margin-left: 40px;'>💰 금 가격 예측 App</h1>
+""", unsafe_allow_html=True)
 
     menu = {
         "🏠 홈": "홈",
@@ -65,7 +67,7 @@ def main():
         data_analysis.run_eda()
     elif choice == "📈 가격예측":
         가격예측.run_ml()
-        
+
 
 if __name__ == "__main__":
     main()
