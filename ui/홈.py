@@ -115,13 +115,14 @@ def run_home():
     st.markdown("<div class='card'>", unsafe_allow_html=True)
     st.markdown("<div class='card-header'>🔮 예측 시스템</div>", unsafe_allow_html=True)
     st.markdown("<div class='card-body'>이 앱은 머신러닝 모델을 기반으로 금 가격을 예측합니다. 예측 시스템은 주로 과거 금 가격 데이터를 기반으로 학습된 모델을 사용하며, 이 모델은 미래의 금 가격을 예측하는 데 도움을 줍니다. 예측 과정은 다음과 같습니다:</div>", unsafe_allow_html=True)
-    
+
     st.markdown("""
     <ol>
         <li><b>데이터 수집:</b> Yahoo Finance API를 통해 과거 금 가격 데이터를 수집합니다. 이 데이터는 금의 일별 종가를 포함합니다.</li>
         <li><b>시계열 특성 생성:</b> 시간에 따른 추세와 계절성을 반영하기 위해 이동 평균, 차분 등의 시계열 특성을 생성합니다.</li>
         <li><b>ARIMA 모델 학습:</b> 과거 데이터를 기반으로 ARIMA(AutoRegressive Integrated Moving Average) 모델을 학습시킵니다. 이 모델은 과거의 금 가격 패턴을 분석하여 미래의 가격을 예측할 수 있습니다.</li>
         <li><b>예측 수행:</b> 사용자가 선택한 날짜를 입력하면, 학습된 ARIMA 모델을 사용하여 해당 날짜의 금 가격을 예측합니다. 예측된 가격은 1온스 및 1그램 기준으로 제공됩니다.</li>
+        <li><b>실시간 환율 변환:</b> 예측된 금 가격은 <b>Exchange Rate API</b>를 이용하여 실시간 환율로 변환됩니다. 이를 통해 사용자는 <b>원화(KRW)</b> 기준으로도 금 가격을 확인할 수 있습니다.</li>
     </ol>
     """, unsafe_allow_html=True)
 
