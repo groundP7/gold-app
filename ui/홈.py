@@ -105,6 +105,7 @@ def run_home():
     # 데이터 분석 설명
     st.markdown("<div class='card'>", unsafe_allow_html=True)
     st.markdown("<div class='card-header'>📊 데이터 분석</div>", unsafe_allow_html=True)
+    st.markdown("<div class='card-header'>탐색적 데이터 분석(EDA)와 시계열 분석(Time Series Analysis)을 사용하여 데이터분석을 진행하였다.", unsafe_allow_html=True)
     st.markdown("<div class='card-body'>앱은 과거 금 가격 데이터를 분석하고, 이를 시각화하여 사용자가 금 가격의 변동성을 더 잘 이해할 수 있도록 돕습니다. 분석 기능은 다음과 같습니다:</div>", unsafe_allow_html=True)
     
     st.markdown("""
