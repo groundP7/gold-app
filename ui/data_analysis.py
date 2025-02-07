@@ -1,133 +1,146 @@
-import streamlit as st
+import yfinance as yf
 import pandas as pd
+import os
+import schedule
+import time
+import streamlit as st
 import plotly.express as px
 
-# CSS 스타일링 개선
-st.markdown("""
-    <style>
-        /* 배경 스타일 */
-        .reportview-container {
-            background: linear-gradient(to right, #f5e1a4, #f7c14d);
-        }
-        /* 폰트 스타일 */
-        .big-font {
-            font-size: 32px !important;
-            font-weight: bold;
-            color: #4B0082;
-            text-align: center;
-        }
-        .medium-font {
-            font-size: 24px !important;
-            color: #8B4513;
-            text-align: center;
-        }
-        .small-font {
-            font-size: 18px !important;
-            color: #4B0082;
-        }
-        /* 버튼 스타일 */
-        .stButton>button {
-            background-color: #4B0082 !important;
-            color: white !important;
-            border-radius: 10px;
-            padding: 10px;
-            font-size: 18px;
-            font-weight: bold;
-        }
-        /* 카드 스타일 */
-        .metric-card {
-            background-color: rgba(255, 255, 255, 0.8);
-            padding: 15px;
-            border-radius: 10px;
-            text-align: center;
-            box-shadow: 2px 2px 10px rgba(0,0,0,0.1);
-        }
-    </style>
-""", unsafe_allow_html=True)
+# CSV 저장 경로
+CSV_FILE = "gold_prices.csv"
 
-def run_eda():
-    # 헤더
-    st.markdown("<p class='big-font'>📊 금 가격 데이터 분석</p>", unsafe_allow_html=True)
-    st.markdown("<p class='small-font' style='text-align: center;'>금 가격 데이터를 분석하고 시각화합니다</p>", unsafe_allow_html=True)
+# 금 가격 데이터 가져오기
+def fetch_gold_price(start_date="2004-01-01"):
+    gold = yf.Ticker("GC=F")  # 금 선물 티커
+    data = gold.history(period="1d", start=start_date, auto_adjust=True)
+    return data[["Close"]].reset_index()
 
-    # 데이터 로드 및 처리
+# 기존 데이터 불러오기
+def load_existing_data():
+    if os.path.exists(CSV_FILE):
+        return pd.read_csv(CSV_FILE, parse_dates=["Date"])
+    return pd.DataFrame(columns=["Date", "Close"])
+
+# 데이터 병합 및 저장
+def update_gold_data():
+    print("최신 금 가격 데이터 업데이트 중...")
+    
+    existing_data = load_existing_data()
+    
+    if existing_data.empty:
+        start_date = "2004-01-01"
+    else:
+        last_date = existing_data["Date"].max().strftime("%Y-%m-%d")
+        start_date = last_date  # 마지막 날짜부터 새 데이터 가져오기
+
+    new_data = fetch_gold_price(start_date)
+    
+    if not new_data.empty:
+        updated_data = pd.concat([existing_data, new_data]).drop_duplicates(subset=["Date"]).reset_index(drop=True)
+        updated_data.to_csv(CSV_FILE, index=False)
+        print(f"{len(new_data)}개의 새로운 데이터가 추가되었습니다.")
+    else:
+        print("새로운 데이터가 없습니다.")
+
+# 매일 자동 업데이트 (스케줄링)
+schedule.every().day.at("00:10").do(update_gold_data)  # 매일 00:10에 실행
+
+# Streamlit 앱 실행
+def run_streamlit():
+    st.title("금 가격 데이터 분석")
+    st.markdown("금 가격 데이터의 통계 및 시각화 결과를 확인하세요.")
+
+    # CSV 데이터 불러오기
     @st.cache_data
     def load_data():
-        df = pd.read_csv("data/XAU_gold_data.csv", sep=";")
-        df["Date"] = pd.to_datetime(df["Date"])
-        df = df.set_index("Date")
+        if not os.path.exists(CSV_FILE):
+            st.error("데이터 파일이 없습니다. 먼저 데이터를 업데이트하세요!")
+            return None
+        df = pd.read_csv(CSV_FILE, parse_dates=["Date"])
+        df.set_index("Date", inplace=True)
         return df
 
     df = load_data()
 
-    # 데이터 개요 (카드 스타일)
-    st.markdown("<p class='medium-font'>📌 데이터 개요</p>", unsafe_allow_html=True)
+    # 데이터가 없으면 실행 중지
+    if df is None:
+        st.stop()
+
+    # 데이터 개요
     col1, col2, col3 = st.columns(3)
     with col1:
-        st.markdown(f"<div class='metric-card'><strong>📅 데이터 기간</strong><br>{df.index.min().date()} ~ {df.index.max().date()}</div>", unsafe_allow_html=True)
+        st.metric("데이터 기간", f"{df.index.min().date()} ~ {df.index.max().date()}")
     with col2:
-        st.markdown(f"<div class='metric-card'><strong>📊 총 데이터 수</strong><br>{len(df):,}일</div>", unsafe_allow_html=True)
+        st.metric("총 데이터 수", f"{len(df):,}일")
     with col3:
-        st.markdown(f"<div class='metric-card'><strong>💰 최근 종가</strong><br>${df['Close'].iloc[-1]:,.2f}</div>", unsafe_allow_html=True)
+        st.metric("최근 종가", f"${df['Close'].iloc[-1]:,.2f}")
 
-    # 데이터프레임 표시
-    with st.expander("📂 금 가격 데이터 보기"):
-        st.dataframe(df.style.highlight_max(axis=0).format({"Close": "${:.2f}", "Open": "${:.2f}", "High": "${:.2f}", "Low": "${:.2f}"}))
+    # 데이터 요약 (통계)
+    with st.expander("금 가격 데이터 보기"):
+        st.dataframe(df.style.format({"Close": "${:.2f}"}))
 
-    # 통계 데이터
-    if st.checkbox("📊 통계 데이터 보기"):
+    if st.checkbox("통계 데이터 보기"):
         st.write(df.describe().style.format("{:.2f}"))
 
-    # 그래프 생성 및 표시
-    st.markdown("<p class='medium-font'>📈 금 가격 추이</p>", unsafe_allow_html=True)
-    fig = px.line(df, y='Close', title='📈 Gold Closing Price Over Time', color_discrete_sequence=["#4B0082"])
-    fig.update_layout(xaxis_title="Date", yaxis_title="Closing Price ($)", template="plotly_dark")
+    # 전체 데이터 그래프
+    st.subheader("금 가격 추이")
+    fig = px.line(df, y="Close", title="금 가격 변동", color_discrete_sequence=["#4B0082"])
+    fig.update_layout(xaxis_title="날짜", yaxis_title="가격 ($)", template="plotly_dark")
     st.plotly_chart(fig, use_container_width=True)
 
-    # 기간별 그래프
-    st.markdown("<p class='medium-font'>⏳ 기간별 금 가격 추이</p>", unsafe_allow_html=True)
-    period = st.selectbox('📅 기간 선택', ['일별', '월별', '분기별', '년별'])
+    # 기간별 데이터 그래프
+    st.subheader("기간별 금 가격 추이")
+    period = st.selectbox("기간 선택", ["일별", "월별", "분기별", "년별"])
 
     def create_gold_chart(data, period):
         if period == "일별":
             resampled_data = data
         elif period == "월별":
-            resampled_data = data.resample('M').last()
+            resampled_data = data.resample("M").last()
         elif period == "분기별":
-            resampled_data = data.resample('Q').last()
+            resampled_data = data.resample("Q").last()
         else:  # 년별
-            resampled_data = data.resample('Y').last()
+            resampled_data = data.resample("Y").last()
         
-        fig = px.line(resampled_data, y='Close', title=f'📈 {period} 금 가격 추이', color_discrete_sequence=["#8B4513"])
-        fig.update_layout(xaxis_title="날짜", yaxis_title="가격 (USD)", template="plotly_dark")
+        fig = px.line(resampled_data, y="Close", title=f"{period} 금 가격 추이", color_discrete_sequence=["#8B4513"])
+        fig.update_layout(xaxis_title="날짜", yaxis_title="가격 ($)", template="plotly_dark")
         return fig
 
-    chart = create_gold_chart(df, period)
-    st.plotly_chart(chart, use_container_width=True)
+    st.plotly_chart(create_gold_chart(df, period), use_container_width=True)
 
     # 사용자 지정 기간 선택
-    st.markdown("<p class='medium-font'>📆 사용자 지정 기간 데이터</p>", unsafe_allow_html=True)
+    st.subheader("사용자 지정 기간 데이터")
     col1, col2 = st.columns(2)
     with col1:
-        start_date = st.date_input("🟢 시작 날짜", min_value=df.index.min().date(), max_value=df.index.max().date(), value=df.index.min().date())
+        start_date = st.date_input("시작 날짜", min_value=df.index.min().date(), max_value=df.index.max().date(), value=df.index.min().date())
     with col2:
-        end_date = st.date_input("🔴 종료 날짜", min_value=df.index.min().date(), max_value=df.index.max().date(), value=df.index.max().date())
+        end_date = st.date_input("종료 날짜", min_value=df.index.min().date(), max_value=df.index.max().date(), value=df.index.max().date())
 
     if start_date <= end_date:
         mask = (df.index.date >= start_date) & (df.index.date <= end_date)
         filtered_df = df.loc[mask]
         if not filtered_df.empty:
-            st.write(f"📅 {start_date} 부터 {end_date} 까지의 데이터:")
-            st.dataframe(filtered_df.style.format({"Close": "${:.2f}", "Open": "${:.2f}", "High": "${:.2f}", "Low": "${:.2f}"}))
-            
-            # 선택된 기간의 그래프
-            fig = px.line(filtered_df, y='Close', title='📈 선택 기간 금 가격 추이', color_discrete_sequence=["#D2691E"])
-            fig.update_layout(xaxis_title="날짜", yaxis_title="가격 (USD)", template="plotly_dark")
+            st.dataframe(filtered_df.style.format({"Close": "${:.2f}"}))
+            fig = px.line(filtered_df, y="Close", title="선택 기간 금 가격 추이", color_discrete_sequence=["#D2691E"])
+            fig.update_layout(xaxis_title="날짜", yaxis_title="가격 ($)", template="plotly_dark")
             st.plotly_chart(fig, use_container_width=True)
         else:
-            st.warning("⚠ 선택한 기간에 해당하는 데이터가 없습니다.")
+            st.warning("선택한 기간에 해당하는 데이터가 없습니다.")
     else:
-        st.error("❌ 시작 날짜는 종료 날짜보다 앞서야 합니다.")
+        st.error("시작 날짜는 종료 날짜보다 앞서야 합니다.")
 
 if __name__ == "__main__":
-    run_eda()
+    update_gold_data()  # 실행 시 즉시 업데이트
+
+    # Streamlit 실행
+    import threading
+
+    def run_streamlit_app():
+        os.system("streamlit run gold_analysis.py")
+
+    thread = threading.Thread(target=run_streamlit_app)
+    thread.start()
+
+    while True:
+        schedule.run_pending()
+        time.sleep(60)  # 1분마다 체크
