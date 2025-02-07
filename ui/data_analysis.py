@@ -12,21 +12,19 @@ def fetch_gold_data():
     try:
         df = yf.download("GC=F", start="2004-01-01", progress=False)
         
-        # 데이터가 정상적으로 다운로드되었는지 확인
+        # 데이터 유효성 검사
         if df is None or df.empty:
             st.error("❌ 데이터를 가져올 수 없습니다.")
             return None
         
-        # 'Close' 컬럼 확인
+        # 필요한 컬럼만 선택
         if 'Close' not in df.columns:
             st.error("❌ 'Close' 컬럼이 없습니다. 데이터 형식을 확인하세요.")
             return None
         
-        # 데이터 정리
         df = df[['Open', 'High', 'Low', 'Close']]
         df.reset_index(inplace=True)
-        df.rename(columns={'Date': 'Date'}, inplace=True)
-        df['Date'] = pd.to_datetime(df['Date'])
+        df['Date'] = pd.to_datetime(df['Date'])  # 날짜 변환
         df.set_index('Date', inplace=True)
 
         # 최신 데이터 저장
@@ -42,9 +40,9 @@ def load_latest_data():
         try:
             df = pd.read_csv(DATA_PATH, sep=';', index_col=0)
 
-            # "Date" 컬럼이 없을 경우 fetch_gold_data() 실행
-            if 'Date' not in df.columns:
-                st.warning("⚠ 로컬 데이터에서 'Date' 컬럼을 찾을 수 없습니다. 최신 데이터를 가져옵니다.")
+            # "Date" 컬럼이 없으면 fetch_gold_data() 실행
+            if df.empty or "Close" not in df.columns:
+                st.warning("⚠ 데이터가 유효하지 않습니다. 최신 데이터를 가져옵니다.")
                 return fetch_gold_data()
 
             df.index = pd.to_datetime(df.index)  # 인덱스를 날짜 형식으로 변환
@@ -55,7 +53,7 @@ def load_latest_data():
     else:
         return fetch_gold_data()  # 파일이 없으면 새로 다운로드
 
-# 🔥 EDA 실행 함수 (앱 실행 시 최신 데이터 반영)
+# 🔥 EDA 실행 함수
 def run_eda():
     st.title("📊 금 가격 데이터 분석")
     st.write("실시간 데이터를 기반으로 금 가격을 분석합니다.")
