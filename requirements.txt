@@ -5,3 +5,4 @@ yfinance
 datetime
 joblib
 requests
+statsmodels
